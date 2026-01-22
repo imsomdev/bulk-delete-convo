@@ -20,12 +20,25 @@ function createFloatingButton() {
   const button = document.createElement("div");
   button.id = "chat-cleaner-btn";
   button.innerHTML = `
-    ${ICONS.trash}
+    <svg class="progress-ring-container" width="60" height="60">
+      <circle
+        class="progress-ring-circle"
+        stroke-width="4"
+        fill="transparent"
+        r="26"
+        cx="30"
+        cy="30"
+      />
+    </svg>
+    <div class="icon-trash">
+      ${ICONS.trash}
+    </div>
     <span id="chat-count">0</span>
   `;
 
   button.addEventListener("click", openModal);
   document.body.appendChild(button);
+  updateCountBadge(); // Ensure progress ring is initialized
 }
 
 // Create modal
@@ -58,7 +71,7 @@ function createModal() {
         <button id="cancel-btn">Cancel</button>
         <button id="delete-btn" class="delete-btn" disabled>Delete Selected</button>
       </div>
-      <div id="progress-container" class="progress-container" style="display: none;">
+      <div id="progress-container" class="progress-container" style="${isDeleting ? "display: block;" : "display: none;"}">
         <div class="progress-bar">
           <div id="progress-fill" class="progress-fill"></div>
         </div>
@@ -212,7 +225,7 @@ function openModal() {
 
 function closeModal() {
   const modal = document.getElementById("chat-cleaner-modal");
-  if (modal && !isDeleting) {
+  if (modal) {
     modal.style.display = "none";
   }
 }
@@ -299,9 +312,15 @@ async function startDeletion() {
 
       // Update progress
       const progress = (deleted / total) * 100;
-      document.getElementById("progress-fill").style.width = `${progress}%`;
-      document.getElementById("progress-text").textContent =
-        `Deleting ${deleted} of ${total}...`;
+      const progressFill = document.getElementById("progress-fill");
+      const progressText = document.getElementById("progress-text");
+
+      if (progressFill) progressFill.style.width = `${progress}%`;
+      if (progressText)
+        progressText.textContent = `Deleting ${deleted} of ${total}...`;
+
+      // Update floating button progress
+      updateCountBadge(deleted, total);
 
       // Remove from UI and collection
       collectedConversations.delete(id);
@@ -323,9 +342,17 @@ async function startDeletion() {
 
   // Reset UI
   isDeleting = false;
-  document.getElementById("progress-container").style.display = "none";
-  document.getElementById("delete-btn").disabled = true;
-  document.getElementById("cancel-btn").disabled = false;
+  const progressContainer = document.getElementById("progress-container");
+  if (progressContainer) progressContainer.style.display = "none";
+
+  const deleteBtn = document.getElementById("delete-btn");
+  if (deleteBtn) deleteBtn.disabled = true;
+
+  const cancelBtn = document.getElementById("cancel-btn");
+  if (cancelBtn) cancelBtn.disabled = false;
+
+  const floatingBtn = document.getElementById("chat-cleaner-btn");
+  if (floatingBtn) floatingBtn.classList.remove("deleting");
 
   showToast(`Successfully deleted ${deleted} of ${total} conversations!`);
 
@@ -422,10 +449,28 @@ function collectConversations() {
   });
 }
 
-function updateCountBadge() {
+function updateCountBadge(current = null, total = null) {
   const badge = document.getElementById("chat-count");
-  if (badge) {
-    badge.textContent = collectedConversations.size;
+  const floatingBtn = document.getElementById("chat-cleaner-btn");
+  const circle = document.querySelector(".progress-ring-circle");
+
+  if (!badge || !circle) return;
+
+  const count = collectedConversations.size;
+  const radius = circle.r.baseVal.value;
+  const circumference = radius * 2 * Math.PI;
+
+  circle.style.strokeDasharray = `${circumference} ${circumference}`;
+
+  if (isDeleting && current !== null && total !== null) {
+    floatingBtn.classList.add("deleting");
+    badge.textContent = current;
+    const offset = circumference - (current / total) * circumference;
+    circle.style.strokeDashoffset = offset;
+  } else {
+    floatingBtn.classList.remove("deleting");
+    badge.textContent = count;
+    circle.style.strokeDashoffset = circumference; // Hide progress when not deleting
   }
 }
 
