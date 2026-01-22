@@ -245,6 +245,8 @@
   padding: 12px;
   border-radius: 8px;
   transition: background 0.2s;
+  cursor: pointer;
+  user-select: none;
 }
 
 .conversation-item:hover {
@@ -259,12 +261,14 @@
   accent-color: var(--accent-color);
 }
 
-.conversation-item label {
-  cursor: pointer;
+.conv-name {
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empty-state {

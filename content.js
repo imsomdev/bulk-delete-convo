@@ -230,10 +230,10 @@ function renderConversationList() {
   listContainer.innerHTML = conversations
     .map(
       (conv) => `
-    <div class="conversation-item">
+    <label class="conversation-item" for="conv-${conv.id}">
       <input type="checkbox" id="conv-${conv.id}" value="${conv.id}" class="conv-checkbox">
-      <label for="conv-${conv.id}">${conv.name}</label>
-    </div>
+      <span class="conv-name">${conv.name}</span>
+    </label>
   `,
     )
     .join("");
