@@ -306,12 +306,40 @@ function collectConversations() {
 
   conversationLinks.forEach((link) => {
     const id = link.getAttribute("href").replace("/c/", "");
-    const nameElement = link.querySelector('div[class*="relative grow"]');
-    const name = nameElement ? nameElement.textContent : "Untitled";
+
+    // Try multiple possible selectors as ChatGPT's DOM changes often
+    const nameElement =
+      link.querySelector("div.relative.grow") ||
+      link.querySelector('div[class*="relative grow"]') ||
+      link.querySelector('span[dir="auto"]') ||
+      link.querySelector("div.line-clamp-1") ||
+      link.querySelector(".overflow-hidden");
+
+    let name = "Untitled";
+    if (nameElement) {
+      name = nameElement.textContent.trim();
+    } else {
+      // Fallback: use link text but remove common icon text characters
+      name = link.textContent
+        .replace(
+          /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
+          "",
+        )
+        .trim();
+    }
+
+    // Final check to avoid empty names
+    if (!name || name === "..." || name.length > 100) name = "Untitled";
 
     if (!collectedConversations.has(id)) {
       collectedConversations.set(id, { id, name });
       updateCountBadge();
+    } else if (
+      name !== "Untitled" &&
+      collectedConversations.get(id).name === "Untitled"
+    ) {
+      // Update name if we previously had Untitled but now found a better one
+      collectedConversations.set(id, { id, name });
     }
   });
 }
