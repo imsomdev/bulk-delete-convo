@@ -253,11 +253,20 @@ function updateSelectedCount() {
   document.getElementById("selected-count").textContent =
     `${selectedCount} selected`;
   document.getElementById("delete-btn").disabled = selectedCount === 0;
+
+  // Update Select All button text
+  const selectAllBtn = document.getElementById("select-all-btn");
+  if (selectAllBtn) {
+    const allChecked =
+      checkboxes.length > 0 && Array.from(checkboxes).every((cb) => cb.checked);
+    selectAllBtn.textContent = allChecked ? "Deselect All" : "Select All";
+  }
 }
 
 function toggleSelectAll() {
   const checkboxes = document.querySelectorAll(".conv-checkbox");
-  const allChecked = Array.from(checkboxes).every((cb) => cb.checked);
+  const allChecked =
+    checkboxes.length > 0 && Array.from(checkboxes).every((cb) => cb.checked);
 
   checkboxes.forEach((cb) => (cb.checked = !allChecked));
   updateSelectedCount();
