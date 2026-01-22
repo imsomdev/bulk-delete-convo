@@ -344,3 +344,109 @@
   color: var(--text-secondary);
   font-size: 14px;
 }
+
+/* Custom Alert/Notification */
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px var(--modal-shadow);
+  border: 1px solid var(--border-color);
+  z-index: 10000;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.custom-alert.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.custom-alert.success {
+  border-left: 4px solid var(--accent-color);
+}
+
+.custom-alert.error {
+  border-left: 4px solid var(--danger-color);
+}
+
+/* Custom Confirmation Modal */
+#custom-confirm-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10001;
+}
+
+.confirm-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px var(--modal-shadow);
+  width: 90%;
+  max-width: 400px;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.confirm-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.confirm-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.confirm-buttons button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+#confirm-yes {
+  background: var(--danger-color);
+  color: var(--text-inverse);
+}
+
+#confirm-yes:hover {
+  background: var(--danger-hover);
+}
+
+#confirm-no {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+#confirm-no:hover {
+  background: var(--bg-hover);
+}

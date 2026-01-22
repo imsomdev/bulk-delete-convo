@@ -69,6 +69,22 @@ function createModal() {
 
   document.body.appendChild(modal);
 
+  // Create Custom Confirm Modal
+  const confirmModal = document.createElement("div");
+  confirmModal.id = "custom-confirm-modal";
+  confirmModal.innerHTML = `
+    <div class="modal-overlay"></div>
+    <div class="confirm-content">
+      <div class="confirm-title">Are you sure?</div>
+      <div id="confirm-message" class="confirm-message"></div>
+      <div class="confirm-buttons">
+        <button id="confirm-no">Cancel</button>
+        <button id="confirm-yes">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(confirmModal);
+
   // Apply initial theme
   applyTheme();
 
@@ -121,18 +137,71 @@ function toggleTheme() {
 
 function applyTheme() {
   const modal = document.getElementById("chat-cleaner-modal");
+  const confirmModal = document.getElementById("custom-confirm-modal");
   if (!modal) return;
 
   // Remove existing classes
   modal.classList.remove("light-theme", "dark-theme");
+  if (confirmModal) confirmModal.classList.remove("light-theme", "dark-theme");
 
   // Add new class if forced
   if (currentTheme === "light") {
     modal.classList.add("light-theme");
+    if (confirmModal) confirmModal.classList.add("light-theme");
   } else if (currentTheme === "dark") {
     modal.classList.add("dark-theme");
+    if (confirmModal) confirmModal.classList.add("dark-theme");
   }
-  // if 'system', no class added, CSS media query takes over
+}
+
+function showToast(message, type = "success") {
+  const toast = document.createElement("div");
+  toast.className = `custom-alert ${type}`;
+  toast.innerHTML = `
+    ${type === "success" ? ICONS.check : "✕"}
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  setTimeout(() => toast.classList.add("show"), 10);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+function customConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("custom-confirm-modal");
+    const msgEl = document.getElementById("confirm-message");
+    const yesBtn = document.getElementById("confirm-yes");
+    const noBtn = document.getElementById("confirm-no");
+
+    msgEl.textContent = message;
+    modal.style.display = "block";
+
+    const handleYes = () => {
+      cleanup();
+      resolve(true);
+    };
+
+    const handleNo = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    const cleanup = () => {
+      modal.style.display = "none";
+      yesBtn.removeEventListener("click", handleYes);
+      noBtn.removeEventListener("click", handleNo);
+    };
+
+    yesBtn.addEventListener("click", handleYes);
+    noBtn.addEventListener("click", handleNo);
+  });
 }
 
 function openModal() {
@@ -201,7 +270,7 @@ async function startDeletion() {
 
   if (selectedIds.length === 0) return;
 
-  const confirmed = confirm(
+  const confirmed = await customConfirm(
     `Are you sure you want to delete ${selectedIds.length} conversation(s)?`,
   );
   if (!confirmed) return;
@@ -249,7 +318,7 @@ async function startDeletion() {
   document.getElementById("delete-btn").disabled = true;
   document.getElementById("cancel-btn").disabled = false;
 
-  alert(`Successfully deleted ${deleted} of ${total} conversations!`);
+  showToast(`Successfully deleted ${deleted} of ${total} conversations!`);
 
   if (collectedConversations.size === 0) {
     closeModal();
